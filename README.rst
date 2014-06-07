@@ -17,7 +17,9 @@ The registry is a tree structure built on top of a networkx graph.
 
 A path can only contain a single model, attempting to add more will result in a
 ValueError exception being thrown.
+
 ::
+
     >>> registry().add_model('/people/adam', adam)
     >>> registry().add_model('/people/adam', monty)
     ValueError: Path already has a model
@@ -43,6 +45,7 @@ Register models and run web server
 ----------------------------------
 
 ::
+
     from __future__ import absolute_import, print_function, division, unicode_literals
 
     from schematics.types import StringType
@@ -87,6 +90,7 @@ TreeModel extends Schematics Model class and receives a path value.
 It registers itself with the tree during construction.
 
 ::
+
     class Person(TreeModel):
         first_name = StringType(required=True)
         last_name = StringType(required=True)
@@ -102,6 +106,7 @@ Exploring
 'nodes' method returns a list of full keys for all nodes.
 
 ::
+
     >>> registry().nodes()
     [u'/people', u'/people/monty/friends/adam', u'/people/adam/friends/monty', u'/people/adam/friends/joey', u'/people/joey', u'/people/monty/friends', u'/people/adam/friends', u'/people/adam', u'/people/monty']
 
@@ -110,6 +115,7 @@ Exploring
 If no node is specified, the root is assumed.
 
 ::
+
     >>> registry().children()
     [u'/people']
     >>> registry().children('/people')
@@ -120,6 +126,7 @@ If no node is specified, the root is assumed.
 If the specified node is a top level node, None is returned.
 
 ::
+
     >>> registry().parent('/people/adam')
     /people
     >>> registry().parent('/people')
@@ -131,6 +138,7 @@ the specified node.
 If no node is specified, the root is assumed.
 
 ::
+
     >>> registry().tree()
     {u'people': {u'adam': {u'friends': {u'monty': {}, u'joey': {}}}, u'monty': {u'friends': {u'adam': {}}}, u'joey': {}}}
     >>> registry().tree('/people')
@@ -145,6 +153,7 @@ Altering these values will have no effect. If you want to change values, you nee
 to use the node() method.
 
 ::
+
     >>> registry().values('/people/adam')
     {'first_name': 'Adam', 'last_name': 'Griffiths'}
     >>> registry().values('/people/adam')['first_name'] = 'Not Adam'
@@ -160,6 +169,7 @@ The node() returns a dictionary of Property objects, to get the value you must u
 the 'value' property of the Property object.
 
 ::
+
     >>> registry().node('/people/adam')
     {'first_name': <schematics_tree.registry.Property object at 0x1033c2ad0>, 'last_name': <schematics_tree.registry.Property object at 0x1033c2b10>}
     >>> registry().node('/people/adam')['first_name'].value
@@ -175,6 +185,7 @@ Removing Models
 When you remove a model, any redundant paths are trimmed from the tree.
 
 ::
+
     >>> registry().values('/people/adam')
     {'first_name': 'Adam', 'last_name': 'Griffiths'}
     >>> registry().remove_model('/people/adam')
@@ -194,6 +205,7 @@ Changing the separator character
 The default separator character is '/'. This can be changed before the registry is created.
 
 ::
+
     from schematics_tree import Registry
     Registry.separator = '.'
 
@@ -214,6 +226,7 @@ application and set it up for you.
 The web page will be accessible at 'http://localhost:8080/'
 
 ::
+
     from schematics_tree.flask import create
     app = create()
     app.run(debug=True, use_debugger=True, use_reloader=True, host='0.0.0.0')
@@ -226,6 +239,7 @@ it using the 'register_blueprints' function.
 The web page will be accessible at 'http://<host:port>/path/goes/here/'
 
 ::
+
     from flask import Flask
     from schematics_tree.flask import register_blueprints
 
