@@ -296,7 +296,7 @@ http://.../nodes/people/adam::
 Dependencies
 ============
 * schematics
-* networx
+* networkx
 * flask (optional)
 
 
