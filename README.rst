@@ -15,16 +15,6 @@ Design
 
 The registry is a tree structure built on top of a networkx graph.
 
-A path can only contain a single model, attempting to add more will result in a
-ValueError exception being thrown.
-
-::
-
-    >>> registry().add_model('/people/adam', adam)
-    >>> registry().add_model('/people/adam', monty)
-    ValueError: Path already has a model
-
-
 The registry stores models using weak pointers, so you don't need to worry about memory
 management. Currently, the tree is only cleaned up when you remove a model.
 
@@ -83,8 +73,16 @@ Register models and run web server
     shutdown()
 
 
-TreeModel
----------
+Adding / Removing Models
+------------------------
+
+The registry is accessible via the registry() function.
+Each model resides at a unique path within the tree.
+
+::
+
+    >>> registry().add_model('/people/adam', adam)
+
 
 TreeModel extends Schematics Model class and receives a path value.
 It registers itself with the tree during construction.
@@ -98,6 +96,45 @@ It registers itself with the tree during construction.
     >>> adam = Person('/people/adam', {'first_name':'Adam','last_name':'Griffiths'})
     >>> registry().values('/people/adam')
     {'first_name': 'Adam', 'last_name': 'Griffiths'}
+
+
+A path can only contain a single model, attempting to add more will result in a
+ValueError exception being thrown.
+
+::
+
+    >>> registry().add_model('/people/adam', adam)
+    >>> registry().add_model('/people/adam', monty)
+    ValueError: Path already has a model
+
+
+When you remove a model, any redundant paths are trimmed from the tree.
+
+::
+
+    >>> registry().node('/people/adam', values=True)
+    {'first_name': 'Adam', 'last_name': 'Griffiths'}
+    # this node has sub nodes, the model and its values will be removed
+    # but the node will remain and still be accessible
+    >>> registry().remove_model('/people/adam')
+    >>> registry().node('/people/adam')
+    {}
+
+
+::
+
+    >>> registry().node('/people/joey', values=True)
+    {'first_name': 'Joey', 'last_name': 'JoeJoeJoe'}
+    # this node has no children and will be removed.
+    # further access will result in an error
+    >>> registry().remove_model('/people/joey')
+    >>> registry().node('/people/joey')
+    KeyError: u'root/people/joey'
+
+
+TreeModel
+---------
+
 
 
 Exploring
@@ -145,28 +182,26 @@ If no node is specified, the root is assumed.
     {u'adam': {u'friends': {u'monty': {}, u'joey': {}}}, u'monty': {u'friends': {u'adam': {}}}, u'joey': {}}
 
 
-Getting Values
---------------
+Getting and Setting Values
+--------------------------
 
-The values() method returns a dictionary of the values at the specified path.
-Altering these values will have no effect. If you want to change values, you need
-to use the node() method.
+The node() method returns a dictionary of the properties at the specified path.
 
 ::
 
-    >>> registry().values('/people/adam')
+    >>> registry().node('/people/adam')
+    {'first_name': <schematics_tree.registry.Property object at 0x1033c2ad0>, 'last_name': <schematics_tree.registry.Property object at 0x1033c2b10>}
+
+
+To make the properties human readable, set 'values=True'.
+
+::
+
+    >>> registry().node('/people/adam', values=True)
     {'first_name': 'Adam', 'last_name': 'Griffiths'}
-    >>> registry().values('/people/adam')['first_name'] = 'Not Adam'
-    >>> registry().values('/people/adam')
-    {'first_name': 'Adam', 'last_name': 'Griffiths'}
 
 
-Setting Values
---------------
-
-Using the node() method you can make changes to the model at the specified path.
-The node() returns a dictionary of Property objects, to get the value you must use
-the 'value' property of the Property object.
+The 'value' property of the Property object supports assignment.
 
 ::
 
@@ -179,24 +214,29 @@ the 'value' property of the Property object.
     'Not Adam'
 
 
-Removing Models
----------------
+Adding, deleting or modifying contents the contents of the returned dictionary
+will not be reflected in the tree or by the models.
 
-When you remove a model, any redundant paths are trimmed from the tree.
+Use the 'value' property of the Property object as mentioned above to make changes.
+
 
 ::
 
-    >>> registry().values('/people/adam')
+    >>> registry().node('/people/adam', values=True)
     {'first_name': 'Adam', 'last_name': 'Griffiths'}
-    >>> registry().remove_model('/people/adam')
-    >>> registry().node('/people/adam')
-    {}
+    >>> registry().node('/people/adam', values=True)['first_name'] = 'Not Adam'
+    >>> registry().node('/people/adam', values=True)
+    {'first_name': 'Adam', 'last_name': 'Griffiths'}
 
-    >>> registry().values('/people/joey')
-    {'first_name': 'Joey', 'last_name': 'JoeJoeJoe'}
-    >>> registry().remove_model('/people/joey')
-    >>> registry().node('/people/joey')
-    KeyError: u'root/people/joey'
+
+::
+
+    >>> registry().node('/people/adam', values=True)
+    {'first_name': 'Adam', 'last_name': 'Griffiths'}
+    >>> del registry().node('/people/adam', values=True)['first_name']
+    >>> registry().node('/people/adam', values=True)
+    {'first_name': 'Adam', 'last_name': 'Griffiths'}
+
 
 
 Changing the separator character

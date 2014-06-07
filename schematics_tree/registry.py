@@ -87,6 +87,10 @@ class Registry(object):
                 k: v.value
                 for k,v in node.items()
             }
+        else:
+            # don't return the node dictionary itself
+            # otherwise the contents can be modified, and thats bad
+            node = node.copy()
         return node
 
     def parent(self, path):
