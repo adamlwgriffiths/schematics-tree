@@ -23,9 +23,6 @@ class Property(object):
         if model:
             model._data[self.field] = value
 
-    def serialise(self):
-        return self.value
-
 
 class Registry(object):
     properties = {}

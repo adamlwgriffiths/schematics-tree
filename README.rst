@@ -132,9 +132,49 @@ When you remove a model, any redundant paths are trimmed from the tree.
     KeyError: u'root/people/joey'
 
 
-TreeModel
----------
+Adding new type handlers
+------------------------
 
+You can add types to the Registry.properties dictionary to handle
+values not trivially supported.
+
+::
+
+    from schematics_tree import Registry, Property, TreeModel
+    from schematics.types.base import BaseType
+
+    class MyType(BaseType):
+        '''custom schematics type
+        '''
+        # implementation of schematics type goes here
+        pass
+
+    class MyModel(TreeModel):
+        ''' model using custom schematics type
+        '''
+        value = MyType()
+
+    class MyProperty(Property):
+        '''property that handles getting and setting values for custom type
+        '''
+        @property
+        def value(self):
+            model = self.model()
+            if model:
+                data = model._data[self.field]
+                # do something with the data
+                return data
+            return None
+
+        @value.setter
+        def value(self, value):
+            model = self.model()
+            if model:
+                # do something with the value
+                model._data[self.field] = value
+
+    # register the property handler
+    Registry.properties[MyType] = MyProperty
 
 
 Exploring
