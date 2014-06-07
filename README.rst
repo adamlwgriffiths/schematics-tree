@@ -296,6 +296,9 @@ Flask end points
 Schematics-tree provides an optional flask application that allows for the viewing
 and modification of model values over HTTP.
 
+There is currently no authentication / security mechanism, so avoid using this
+for internet-connected systems.
+
 
 Create a default application
 ----------------------------
@@ -316,7 +319,7 @@ The web page will be accessible at 'http://localhost:8080/'
 If you already have a flask application, you can add the schematics-tree views to
 it using the 'register_blueprints' function.
 
-The web page will be accessible at 'http://<host:port>/path/goes/here/'
+The web page will be accessible at 'http://<host:port>/<url_prefix>/'
 
 ::
 
