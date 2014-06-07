@@ -196,7 +196,7 @@ If no node is specified, the root is assumed.
     >>> registry().children()
     [u'/people']
     >>> registry().children('/people')
-[u'/people/adam', u'/people/joey', u'/people/monty']
+    [u'/people/adam', u'/people/joey', u'/people/monty']
 
 
 'parent' returns the full key for the parent of the specified node.
