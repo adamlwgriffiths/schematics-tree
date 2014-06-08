@@ -298,9 +298,6 @@ and modification of model values over HTTP.
 There is currently no authentication / security mechanism, so avoid using this
 for internet-connected systems.
 
-If you're not using flask in your application, this function will create a flask
-application and set it up for you.
-
 To serve the page you can use flask itself, but websockets won't work using flasks
 built in application.
 To enable websockets you must use a WSGI server such as:
@@ -313,6 +310,9 @@ There are likely others that will work too.
 
 Flask
 -----
+
+If you're not using flask in your application, this function will create a flask
+application and set it up for you.
 
 Using Flask's built-in web server.
 Views will work but there is no websocket support for dynamic updates.
@@ -332,10 +332,13 @@ The web page will be accessible at 'http://localhost:8080/'
 Flask + gevent-websocket
 ------------------------
 
+If you're not using flask in your application, this function will create a flask
+application and set it up for you.
+
 Using gevent-websocket (websocket enabled). gevent-websocket is installed as a
 dependency of flask-sockets. So this should run out of the box.
 
-It should be noted that gevent-websockets does not use monkeypatch, and should
+It should be noted that gevent-websockets does *not* use monkeypatch, and should
 therefore have no unexpected side-effects.
 
 The web page will be accessible at 'http://localhost:8080/'
@@ -356,8 +359,8 @@ The web page will be accessible at 'http://localhost:8080/'
 Existing Flask App
 ------------------
 
-If you already have a flask application and your own way to run it, you can add
-the schematics-tree views to it using the 'register_blueprints' function.
+If you already have a flask application, you can add the schematics-tree views
+to it using the 'register_blueprints' function.
 
 The web page will be accessible at 'http://<host:port>/<url_prefix>/'
 
