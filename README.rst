@@ -307,32 +307,65 @@ application and set it up for you.
 
 The web page will be accessible at 'http://localhost:8080/'
 
+To serve the page you can use flask itself, but websockets won't work using flasks
+built in application.
+To enable websockets you must use a WSGI server such as:
+
+`Gunicorn <http://docs.gunicorn.org/en/latest/run.html>`_,
+`Bottle <http://bottlepy.org/docs/dev/async.html>`_,
+`gevent-websocket <https://github.com/jgelens/gevent-websocket>`_.
+There are likely others that will work too.
+
+Using Flask's built-in web server.
+Views will work but there is no websocket support for dynamic updates.
+
 ::
 
     from schematics_tree.flask import create
     app = create()
-    app.run(debug=True, use_debugger=True, use_reloader=True, host='0.0.0.0')
+
+    # only views will work when using flask's built in web server
+    # websockets won't work here
+    app.run(debug=True, use_debugger=True, use_reloader=True, host='0.0.0.0', port=8080)
 
 
+Using gevent-websocket (websocket enabled). gevent-websocket is installed as a
+dependency of flask-sockets. So this should run out of the box.
 
-If you already have a flask application, you can add the schematics-tree views to
-it using the 'register_blueprints' function.
+It should be noted that gevent-websockets does not use monkeypatch, and should
+therefore have no unexpected side-effects.
+
+::
+
+    from schematics_tree.flask import create
+    app = create()
+
+    # view and websockets will work when using gevent-websocket
+    from gevent.pywsgi import WSGIServer
+    from geventwebsocket.handler import WebSocketHandler
+    server = WSGIServer(("0.0.0.0", 8080), app, handler_class=WebSocketHandler)
+    server.serve_forever()
+
+
+If you already have a flask application and your own way to run it, you can add
+the schematics-tree views to it using the 'register_blueprints' function.
 
 The web page will be accessible at 'http://<host:port>/<url_prefix>/'
 
 ::
 
     from flask import Flask
-    from schematics_tree.flask import register_blueprints
+    from schematics_tree.flask import register_blueprints, register_websockets
 
     app = Flask(__name__)
-    # url_prefix is None
+    # url_prefix is None by default
     # provide a url_prefix to avoid clashing with your application
-    def register_blueprints(app, url_prefix='/path/goes/here'):
+    register_blueprints(app, url_prefix='/path/goes/here')
+    register_websockets(app, url_prefix='/path/goes/here')
 
 
-/keys/<path>
------
+/keys/<path> [GET]
+------------------
 
 Provides a list of keys, in full key format, from the specified starting path.
 
@@ -350,8 +383,8 @@ http://.../keys/people::
     ["/people/adam", "/people/joey", "/people/monty"]
 
 
-/tree/<path>
-------------
+/tree/<path> [GET]
+------------------
 
 Provides a view of the tree, as a dictionary of dictionaries, from the specified starting path.
 
@@ -365,14 +398,89 @@ http://...tree/people/adam::
     {"friends": {"monty": {}, "joey": {}}}
 
 
-/values/<path>
--------------
+/values/<path> [GET, PUT]
+-------------------------
 
 Provide the values of a specified path.
 
-http://.../values/people/adam::
+http://.../values/people/adam [GET]::
 
     {"first_name": "Adam", "last_name": "Griffiths"}
+
+
+http://.../values/people/adam [PUT]
+
+JSON request::
+
+    {"first_name": "NotAdam"}
+
+
+Response::
+
+    {"first_name": "NotAdam", "last_name": "Griffiths"}
+
+
+
+/ws
+---
+
+Websocket end point. Used to get real-time events from the tree.
+
+
+Websocket Event Messages
+========================
+
+Model Added
+-----------
+
+Sent when a model has been added to the tree.
+
+::
+
+    {
+        "event": "model_added",
+        "path": "/path/in/tree"
+    }
+
+
+Model Removed
+-------------
+
+Sent when a model has been removed from the tree.
+
+::
+
+    {
+        "event": "model_removed",
+        "path": "/path/in/tree"
+    }
+
+
+Path Added
+----------
+
+Sent when a model has been added to the tree causing the tree to add new paths.
+
+::
+
+    {
+        "event": "path_added",
+        "path": "/path/in/tree"
+    }
+
+
+Path Removed
+------------
+
+Sent when a model has been removed from the tree and the tree has been trimmed.
+
+::
+
+    {
+        "event": "path_removed",
+        "path": "/path/in/tree"
+    }
+
 
 
 Dependencies

@@ -1,11 +1,13 @@
 from __future__ import absolute_import, print_function, division, unicode_literals
-import networkx as nx
 from weakref import ref
+import networkx as nx
+import dispatch
 from .tree import TreeGraph
 
 
 class Property(object):
-    def __init__(self, model, field):
+    def __init__(self, path, model, field):
+        self.path = path
         self.model = ref(model)
         self.field = field
 
@@ -25,6 +27,10 @@ class Property(object):
 
 class Registry(object):
     properties = {}
+    model_added = dispatch.Signal(providing_args=['path'])
+    model_removed = dispatch.Signal(providing_args=['path'])
+    path_added = dispatch.Signal(providing_args=['path'])
+    path_removed = dispatch.Signal(providing_args=['path'])
 
     def __init__(self, separator='/'):
         self.graph = TreeGraph(separator)
@@ -34,6 +40,8 @@ class Registry(object):
         return self.graph.separator
 
     def add_model(self, path, model):
+        new_path = path in self.graph.graph
+
         edge, node = self.graph.add(path)
         if 'model' in edge:
             raise ValueError('Path already has a model')
@@ -41,7 +49,11 @@ class Registry(object):
         for k,v in model._data.items():
             field = model._fields[k]
             prop = self.properties.get(field, Property)
-            node[k] = prop(model, k)
+            node[k] = prop(path, model, k)
+
+        # dispatch a signal
+        self.path_added.send(sender=self, path=path)
+        self.model_added.send(sender=self, path=path)
 
     def remove_model(self, path):
         edge, node = self.graph.parent_edge(path), self.graph.node(path)
@@ -49,6 +61,10 @@ class Registry(object):
         # clear the model properties from the node
         edge.clear()
         node.clear()
+
+        # dispatch a signal
+        self.model_removed.send(sender=self, path=path)
+
         # prune this branch
         self._prune(path)
 
@@ -65,6 +81,7 @@ class Registry(object):
             self.graph.remove(node)
 
         # remove parents until we hit a model
+        removed = path
         current = path
         while current:
             # get the current node's parent edge
@@ -74,7 +91,11 @@ class Registry(object):
                 break
             # remove and get the parent
             self.graph.remove(current)
+            removed = current
             current = self.graph.parent(current)
+
+        # dispatch a signal
+        self.path_removed.send(sender=self, path=removed)
 
     def node(self, path, values=False):
         node = self.graph.node(path)
