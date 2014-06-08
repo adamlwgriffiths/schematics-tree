@@ -1,6 +1,7 @@
 from __future__ import absolute_import, print_function, division#, unicode_literals
 # can't import unicode literals or we break flask
 from flask_sockets import Sockets
+from geventwebsocket import WebSocketError
 import json
 from ..registry import registry
 
@@ -41,10 +42,14 @@ def register_websockets(app, url_prefix=None):
         registry().path_removed.connect(path_removed)
 
         while True:
-            message = ws.receive()
+            try:
+                message = ws.receive()
 
-            # handle the message
-            # TODO:
+                # handle the message
+                # TODO:
 
-            response = {}
-            ws.send(json.dumps(response))
+                response = {}
+                ws.send(json.dumps(response))
+            except WebSocketError as e:
+                # websocket closed
+                break
