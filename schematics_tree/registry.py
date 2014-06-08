@@ -1,7 +1,6 @@
 from __future__ import absolute_import, print_function, division, unicode_literals
 import networkx as nx
 from weakref import ref
-from collections import defaultdict
 from .tree import TreeGraph
 
 
