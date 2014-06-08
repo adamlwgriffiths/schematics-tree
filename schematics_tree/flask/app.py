@@ -3,8 +3,8 @@ from flask import Flask
 from .view import blueprint
 from .sockets import register_websockets
 
-def create():
-    app = Flask(__name__)
+def create(*args, **kwargs):
+    app = Flask(__name__, *args, **kwargs)
     register_blueprints(app)
     register_websockets(app)
     return app
