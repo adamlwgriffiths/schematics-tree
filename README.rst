@@ -7,7 +7,8 @@ Provides real-time inspection of classes using Schematic's Model and Type classe
 A central registry is provided which stores Models in a Tree using user provided paths.
 This registry can then be explored and manipulated in real-time.
 
-A Flask application is included to allow viewing an application's data over HTTP.
+A Flask application is included to allow viewing an application's data over RESTful
+HTTP and websockets.
 
 
 Design
@@ -17,7 +18,6 @@ The registry is a tree structure built on top of a networkx graph.
 
 The registry stores models using weak pointers, so you don't need to worry about memory
 management. Currently, the tree is only cleaned up when you remove a model.
-
 
 Properties are represented with a Property class. This redirects requests for its
 'value' property to the model's value.
@@ -289,18 +289,14 @@ values not trivially supported.
     Registry.properties[MyType] = MyProperty
 
 
-Flask end points
-================
+Create a Flask Application
+==========================
 
 Schematics-tree provides an optional flask application that allows for the viewing
 and modification of model values over HTTP.
 
 There is currently no authentication / security mechanism, so avoid using this
 for internet-connected systems.
-
-
-Create a default application
-----------------------------
 
 If you're not using flask in your application, this function will create a flask
 application and set it up for you.
@@ -316,6 +312,10 @@ To enable websockets you must use a WSGI server such as:
 `gevent-websocket <https://github.com/jgelens/gevent-websocket>`_.
 There are likely others that will work too.
 
+
+Flask
+-----
+
 Using Flask's built-in web server.
 Views will work but there is no websocket support for dynamic updates.
 
@@ -328,6 +328,9 @@ Views will work but there is no websocket support for dynamic updates.
     # websockets won't work here
     app.run(debug=True, use_debugger=True, use_reloader=True, host='0.0.0.0', port=8080)
 
+
+Flask + gevent-websocket
+------------------------
 
 Using gevent-websocket (websocket enabled). gevent-websocket is installed as a
 dependency of flask-sockets. So this should run out of the box.
@@ -347,6 +350,9 @@ therefore have no unexpected side-effects.
     server.serve_forever()
 
 
+Existing Flask App
+------------------
+
 If you already have a flask application and your own way to run it, you can add
 the schematics-tree views to it using the 'register_blueprints' function.
 
@@ -362,6 +368,10 @@ The web page will be accessible at 'http://<host:port>/<url_prefix>/'
     # provide a url_prefix to avoid clashing with your application
     register_blueprints(app, url_prefix='/path/goes/here')
     register_websockets(app, url_prefix='/path/goes/here')
+
+
+Flask end points
+================
 
 
 /keys/<path> [GET]
@@ -460,6 +470,7 @@ Path Added
 ----------
 
 Sent when a model has been added to the tree causing the tree to add new paths.
+This is the furthest part of the tree that has been added.
 
 ::
 
@@ -473,6 +484,8 @@ Path Removed
 ------------
 
 Sent when a model has been removed from the tree and the tree has been trimmed.
+This will be the lowest part of the tree that was removed. All paths under this
+should be considered deleted.
 
 ::
 
