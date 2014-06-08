@@ -301,8 +301,6 @@ for internet-connected systems.
 If you're not using flask in your application, this function will create a flask
 application and set it up for you.
 
-The web page will be accessible at 'http://localhost:8080/'
-
 To serve the page you can use flask itself, but websockets won't work using flasks
 built in application.
 To enable websockets you must use a WSGI server such as:
@@ -318,6 +316,8 @@ Flask
 
 Using Flask's built-in web server.
 Views will work but there is no websocket support for dynamic updates.
+
+The web page will be accessible at 'http://localhost:8080/'
 
 ::
 
@@ -337,6 +337,9 @@ dependency of flask-sockets. So this should run out of the box.
 
 It should be noted that gevent-websockets does not use monkeypatch, and should
 therefore have no unexpected side-effects.
+
+The web page will be accessible at 'http://localhost:8080/'
+
 
 ::
 
