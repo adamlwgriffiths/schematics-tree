@@ -366,12 +366,12 @@ http://...tree/people/adam::
     {"friends": {"monty": {}, "joey": {}}}
 
 
-/nodes/<path>
+/values/<path>
 -------------
 
 Provide the values of a specified path.
 
-http://.../nodes/people/adam::
+http://.../values/people/adam::
 
     {"first_name": "Adam", "last_name": "Griffiths"}
 

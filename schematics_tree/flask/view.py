@@ -34,7 +34,7 @@ class TreeView(MethodView):
             print(e)
             abort(404)
 
-class NodeView(MethodView):
+class ValuesView(MethodView):
     def get(self, node, **kwargs):
         try:
             # add the separator prefix
@@ -65,4 +65,4 @@ blueprint.add_url_rule('/keys', strict_slashes=False, view_func=KeysView.as_view
 blueprint.add_url_rule('/keys/<path:node>', strict_slashes=False, view_func=KeysView.as_view('child_keys'))
 blueprint.add_url_rule('/tree', strict_slashes=False, view_func=TreeView.as_view('full_tree'))
 blueprint.add_url_rule('/tree/<path:node>', strict_slashes=False, view_func=TreeView.as_view('sub_tree'))
-blueprint.add_url_rule('/nodes/<path:node>', strict_slashes=False, view_func=NodeView.as_view('values'))
+blueprint.add_url_rule('/values/<path:node>', strict_slashes=False, view_func=ValuesView.as_view('values'))
