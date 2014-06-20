@@ -507,6 +507,7 @@ Dependencies
 * schematics
 * networkx
 * flask (optional)
+* flask-sockets (optional)
 
 
 TODO
